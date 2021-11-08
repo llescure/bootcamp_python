@@ -1,0 +1,5 @@
+pip list
+pip list
+pipe show nump
+wget -O - https://pypi.org/simple/ | grep -i tesseract
+pip freeze > requirements.txt
