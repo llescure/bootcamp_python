@@ -10,8 +10,8 @@ class Book:
         except:
             print("Name is not a string")
             exit()
-        last_update = date.today()
-        creation_date = date.today()
+        self.last_update = date.today()
+        self.creation_date = date.today()
 
     def get_recipe_by_name(self, name):
         """Prints a recipe with the name textt{name} and returns the instance"""
