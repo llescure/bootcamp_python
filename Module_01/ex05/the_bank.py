@@ -19,21 +19,39 @@ class Bank(object):
     def add(self, account):
         self.account.append(account)
 
+    def bank_account_is_corrupted(self, whois):
+        check_number_attributes = 0
+        check_attributes_start = False
+        self.whois = whois
+        for accounts in self.account:
+            if accounts.id is self.whois or accounts.name is self.whois:
+                bank_account_parameters = dir(accounts)
+        if (len(bank_account_parameters)) % 2 == 0:
+            return True
+        for attributes in bank_account_parameters:
+            if attributes is "name":
+                check_number_attributes += 1
+            elif attributes is "id":
+                check_number_attributes += 1
+            elif attributes is "value":
+                check_number_attributes += 1
+            elif attributes.startswith("b"):
+                return True
+            elif attributes.startswith("zip") or attributes.startswith("addr"):
+                check_attributes_start = True
+        if check_number_attributes != 3:
+            return True
+        if check_attributes_start is False:
+            return True
+        return False
+
     def transfer(self, origin, dest, amount):
-        """
-            @origin: int(id) or str(name) of the first account
-            @dest: int(id) or str(name) of the destination account
-            @amount: float(amount) amount to transfer
-            @return True if success, False if an error occured
-        """
         is_str_origin = isinstance(origin, str)
         is_int_origin = isinstance(origin, int)
         is_str_dest = isinstance(dest, str)
         is_int_dest = isinstance(dest, int)
         is_present_origin = False
         is_present_dest = False
-        check_number_attributes = 0
-        check_attributes_start = False
 
         #Check the object type
         for accounts in self.account:
@@ -78,6 +96,11 @@ name/id account")
 name/id account")
             return False
 
+        #Check if banks accounts are corrupted
+        if self.bank_account_is_corrupted(self.origin) or \
+        self.bank_account_is_corrupted(self.dest):
+            return False
+
         #Check the type and value of amount is correct
         try:
             self.amount = float(amount)
@@ -95,44 +118,86 @@ name/id account")
 transfer".format(self.origin))
                         return False
 
-        #Check if bank account is corrupted
-        for accounts in self.account:
-            if accounts.id is self.dest or accounts.name is self.dest:
-                bank_account_parameters = dir(accounts)
-        if (len(bank_account_parameters)) % 2 == 0:
-            print("Even number of attributes, the file is corrupted")
-            return False
-        for attributes in bank_account_parameters:
+    def modify_bank_account(self, account_selected, bank_parameters):
+        self.account_selected = account_selected
+        self.bank_parameters = bank_parameters
+        even = False
+        check_attributes_name = False
+        check_attributes_id = False
+        check_attributes_value = False
+        check_attributes_start = False
+        check_attributes_start_b = False
+        #Find the parameters which don't correspond to the criteria
+        if (len(self.bank_parameters)) % 2 == 0:
+            even = True
+        for attributes in self.bank_parameters:
             if attributes is "name":
-                check_number_attributes += 1
+                check_attributes_name = True
             elif attributes is "id":
-                check_number_attributes += 1
+                check_attributes_id = True
             elif attributes is "value":
-                check_number_attributes += 1
+                check_attributes_value = True
             elif attributes.startswith("b"):
-                print("An attribute starts with b")
-                return False
+                check_attributes_start_b = True
             elif attributes.startswith("zip") or attributes.startswith("addr"):
                 check_attributes_start = True
-        if check_number_attributes != 3:
-            print("All attributes name, id and value are not present")
-            return False
-        if check_attributes_start is False:
-            print("No attributes start with zip or addr")
-            return False
+        #Modify the parameters inside the class
+        for accounts in self.account:
+               if accounts.id is self.account_selected or accounts.name \
+                is self.account_selected:
+                    if even:
+                        if check_attributes_start is False:
+                            accounts.__dict__["zip"] = 0
+                            check_attributes_start = True
+                        elif check_attributes_name is False:
+                            accounts.__dict__["name"] = "Unknown"
+                            check_attributes_name = True
+                        elif check_attributes_id is False:
+                            accounts.__dict__["id"] = None
+                            check_attributes_id = True
+                        elif check_attributes_value is False:
+                            check_attributes_value = True
+                            accounts.__dict__["value"] = 0
+                        else:
+                            accounts.__dict__["toto"] = ""
+                    elif check_attributes_start is False:
+                        check_attributes_start = True
+                        accounts.__dict__["zip"] = 0
+                        accounts.__dict__["toto"] = ""
+                    elif check_attributes_name is False:
+                        check_attributes_name = True
+                        accounts.__dict__["name"] = "Unknown"
+                        accounts.__dict__["toto"] = ""
+                    elif check_attributes_id is False:
+                        check_attributes_id = True
+                        accounts.__dict__["id"] = None
+                        accounts.__dict__["toto"] = ""
+                    elif check_attributes_value is False:
+                        check_attributes_value = True
+                        accounts.__dict__["value"] = 0
+                        accounts.__dict__["toto"] = ""
 
     def fix_account(self, account):
-        """
-            fix the corrupted account
-            @account: int(id) or str(name) of the account
-            @return True if success, False if an error occured
-        """
-        is_str_account = isinstance(account, str)
-        is_str_account = isinstance(account, int)
-        if is_str_account:
-            self.account = str(account)
-        elif is_int_account:
-            self.account = int(account)
+        is_str_account_selected = isinstance(account, str)
+        is_int_account_selected = isinstance(account, int)
+        if is_str_account_selected:
+            self.account_selected = str(account)
+        elif is_int_account_selected:
+            self.account_selected = int(account)
         else:
             print("The type of the account doesn't match")
+            return False
+        if self.bank_account_is_corrupted(self.account_selected):
+            for accounts in self.account:
+               if accounts.id is self.account_selected or accounts.name \
+                       is self.account_selected:
+                    bank_account_parameters = dir(accounts)
+            #for accounts in self.account:
+             #   print(accounts.__dict__)
+            while self.bank_account_is_corrupted(self.account_selected):
+                self.modify_bank_account(self.account_selected, \
+                bank_account_parameters)
+            print("The file is not corrupted anymore")
+        else:
+            print("The account is not corrupted. The error is elsewhere")
             return False

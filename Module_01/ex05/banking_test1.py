@@ -6,7 +6,7 @@ if __name__ == "__main__":
         'Smith Jane',
         zip='911-745',
         value=1000.0,
-        other="yoyo"
+        info="yoyo"
     ))
     bank.add(Account(
         'William John',
